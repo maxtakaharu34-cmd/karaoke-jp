@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+<meta name="theme-color" content="#fff5e0" />
+<title>カラオケ予約</title>
+<link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+P+One&family=Kosugi+Maru&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box}html,body{margin:0;padding:0;height:100%;overflow:hidden}
+body{font-family:"Kosugi Maru",system-ui,sans-serif;color:#3a2a1c;background:linear-gradient(180deg,#fff4d6,#ffe5b8);touch-action:manipulation;user-select:none;-webkit-tap-highlight-color:transparent}
+#app{display:flex;flex-direction:column;height:100dvh;padding:10px 14px;gap:10px;max-width:480px;margin:0 auto}
+header{display:flex;justify-content:space-between;align-items:center}
+.title{font-family:"Mochiy Pop P One",sans-serif;font-size:22px;color:#ff6b35;-webkit-text-stroke:2.5px #fff;paint-order:stroke fill;text-shadow:3px 3px 0 #3a2a1c;margin:0;transform:rotate(-2deg)}
+.icon-btn{background:#fff;border:2.5px solid #3a2a1c;color:#3a2a1c;padding:5px 10px;border-radius:999px;font-size:13px;font-weight:900;cursor:pointer;box-shadow:2px 2px 0 #3a2a1c}
+.input-row{display:grid;grid-template-columns:auto 1fr auto;gap:6px;align-items:stretch}
+.input-row input,.input-row select{background:#fff;border:2.5px solid #3a2a1c;border-radius:12px;padding:10px;font-family:inherit;font-size:15px}
+.input-row input{user-select:auto}
+.input-row select{font-size:13px}
+.input-row button{background:#ff6b35;color:#fff;border:2.5px solid #3a2a1c;border-radius:12px;padding:0 18px;font-family:"Mochiy Pop P One",sans-serif;font-size:14px;cursor:pointer;box-shadow:2px 2px 0 #3a2a1c}
+.input-row button:active{transform:translate(2px,2px);box-shadow:0 0 0 #3a2a1c}
+.now-playing{background:linear-gradient(180deg,#ff6b35,#d93a1a);color:#fff;border:3px solid #3a2a1c;border-radius:14px;padding:12px;box-shadow:3px 3px 0 #3a2a1c;display:flex;align-items:center;gap:10px}
+.now-playing .ico{font-size:32px;animation:spin 2s linear infinite}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.now-playing .info{flex:1;min-width:0}
+.now-playing .lbl{font-size:9px;letter-spacing:.15em;opacity:.85}
+.now-playing .ttl{font-family:"Mochiy Pop P One",sans-serif;font-size:16px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.now-playing .by{font-size:11px;opacity:.85;margin-top:2px}
+.now-playing button{background:#fff;color:#3a2a1c;border:2px solid #3a2a1c;border-radius:999px;padding:6px 14px;font-family:"Mochiy Pop P One",sans-serif;font-size:12px;cursor:pointer}
+.list-wrap{flex:1;min-height:0;overflow-y:auto;background:#fff;border:2.5px solid #3a2a1c;border-radius:14px;box-shadow:3px 3px 0 #3a2a1c;padding:6px}
+.list-wrap h3{margin:4px 6px 6px;font-family:"Mochiy Pop P One",sans-serif;font-size:13px;color:#ff6b35;display:flex;justify-content:space-between}
+.song{display:grid;grid-template-columns:30px 1fr auto auto;gap:8px;align-items:center;padding:8px;border-top:1px solid #f0d8b8;font-size:13px}
+.song:first-of-type{border-top:0}
+.song .n{font-family:"Mochiy Pop P One",sans-serif;color:#ff6b35;text-align:center}
+.song .ttl{font-family:"Mochiy Pop P One",sans-serif;font-size:13px;line-height:1.2}
+.song .by{font-size:11px;opacity:.6}
+.song .who{background:#ffd56b;border:1.5px solid #3a2a1c;border-radius:999px;padding:2px 8px;font-size:10px}
+.song .ctrl{display:flex;gap:4px}
+.song .ctrl button{background:none;border:0;color:#888;cursor:pointer;font-size:14px;padding:0 4px}
+.song .ctrl button:hover{color:#3a2a1c}
+.empty{padding:30px 10px;text-align:center;opacity:.5;font-size:13px;white-space:pre-line}
+.actions-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.actions-row button{background:#fff;border:2.5px solid #3a2a1c;color:#3a2a1c;padding:10px;font-family:"Mochiy Pop P One",sans-serif;font-size:13px;border-radius:12px;cursor:pointer;box-shadow:2px 2px 0 #3a2a1c}
+.actions-row button:active{transform:translate(2px,2px);box-shadow:0 0 0 #3a2a1c}
+.actions-row .next{background:#ff6b35;color:#fff}
+.actions-row button:disabled{opacity:.4;cursor:not-allowed}
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,30px);background:#3a2a1c;color:#fff;padding:8px 16px;border-radius:999px;font-size:13px;opacity:0;transition:.25s;z-index:200}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1 class="title">カラオケ予約</h1>
+    <button class="icon-btn" id="btn-clear">↺</button>
+  </header>
+  <div class="now-playing" id="now-playing" style="display:none">
+    <div class="ico">🎤</div>
+    <div class="info">
+      <div class="lbl">NOW SINGING</div>
+      <div class="ttl" id="np-ttl">—</div>
+      <div class="by" id="np-by">—</div>
+    </div>
+    <button id="btn-done">✓ 完了</button>
+  </div>
+  <div class="input-row">
+    <select id="who">
+      <option value="">👤 名前</option>
+    </select>
+    <input type="text" id="title" placeholder="曲名 / アーティスト" maxlength="60" />
+    <button id="btn-add">＋</button>
+  </div>
+  <div class="input-row">
+    <input type="text" id="newname" placeholder="新メンバー追加..." maxlength="20" />
+    <input type="text" disabled style="opacity:0.4" placeholder=""/>
+    <button id="btn-addname" style="background:#5fc4ff">＋名</button>
+  </div>
+  <div class="list-wrap">
+    <h3>予約リスト <span id="count">0曲</span></h3>
+    <div id="list"></div>
+  </div>
+  <div class="actions-row">
+    <button id="btn-shuffle">🔀 順番をシャッフル</button>
+    <button class="next" id="btn-next">▶ 次の曲を再生</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(()=>{
+'use strict';
+const KEY='karaoke_v1';
+const $=(id)=>document.getElementById(id);
+const state={members:[],queue:[],current:null};
+try{const s=JSON.parse(localStorage.getItem(KEY));if(s){Object.assign(state,s)}}catch{}
+const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
+function showToast(t){const e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(showToast._t);showToast._t=setTimeout(()=>e.classList.remove('show'),1500)}
+function rebuildSelect(){
+  const s=$('who');while(s.firstChild)s.removeChild(s.firstChild);
+  const o=document.createElement('option');o.value='';o.textContent='👤 名前';s.appendChild(o);
+  for(const m of state.members){const o=document.createElement('option');o.value=m;o.textContent=m;s.appendChild(o)}
+}
+function render(){
+  rebuildSelect();
+  const list=$('list');while(list.firstChild)list.removeChild(list.firstChild);
+  if(state.queue.length===0){
+    const e=document.createElement('div');e.className='empty';e.textContent='まだ予約なし。\n曲を追加してね 🎤';list.appendChild(e);
+  }else{
+    state.queue.forEach((q,i)=>{
+      const r=document.createElement('div');r.className='song';
+      const n=document.createElement('div');n.className='n';n.textContent=String(i+1);
+      const m=document.createElement('div');
+      const t=document.createElement('div');t.className='ttl';t.textContent=q.title;
+      const b=document.createElement('div');b.className='by';b.textContent=q.by||'';
+      m.appendChild(t);if(q.by)m.appendChild(b);
+      const w=document.createElement('div');w.className='who';w.textContent=q.who||'?';
+      const c=document.createElement('div');c.className='ctrl';
+      const up=document.createElement('button');up.textContent='▲';up.title='前へ';up.addEventListener('click',()=>{if(i>0){[state.queue[i-1],state.queue[i]]=[state.queue[i],state.queue[i-1]];save();render()}});
+      const dn=document.createElement('button');dn.textContent='▼';dn.title='後ろへ';dn.addEventListener('click',()=>{if(i<state.queue.length-1){[state.queue[i+1],state.queue[i]]=[state.queue[i],state.queue[i+1]];save();render()}});
+      const dl=document.createElement('button');dl.textContent='✕';dl.title='削除';dl.addEventListener('click',()=>{state.queue.splice(i,1);save();render()});
+      c.appendChild(up);c.appendChild(dn);c.appendChild(dl);
+      r.appendChild(n);r.appendChild(m);r.appendChild(w);r.appendChild(c);list.appendChild(r);
+    });
+  }
+  $('count').textContent=state.queue.length+'曲';
+  if(state.current){
+    $('now-playing').style.display='';
+    $('np-ttl').textContent=state.current.title;
+    $('np-by').textContent=(state.current.who||'?')+(state.current.by?' / '+state.current.by:'');
+  }else{$('now-playing').style.display='none'}
+}
+function add(){
+  const title=$('title').value.trim();
+  const who=$('who').value;
+  if(!title){showToast('曲名を入れて');return}
+  // split by /, -, ／ to extract artist
+  let by='';let t=title;
+  const sep=t.match(/[/／-]/);if(sep){const idx=t.indexOf(sep[0]);by=t.slice(idx+1).trim();t=t.slice(0,idx).trim()}
+  state.queue.push({title:t,by,who:who||'',id:Date.now()});
+  $('title').value='';
+  save();render();
+  showToast('追加しました');
+}
+function addName(){
+  const nm=$('newname').value.trim();
+  if(!nm)return;
+  if(state.members.includes(nm)){showToast('もう登録済み');return}
+  state.members.push(nm);
+  $('newname').value='';
+  save();render();showToast(nm+' を追加');
+}
+function nextSong(){
+  if(state.queue.length===0){showToast('予約がありません');return}
+  state.current=state.queue.shift();save();render();
+  // simple jingle
+  let ac=null;const en=()=>{if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();return ac};
+  const a=en();[523,659,784,1047].forEach((f,i)=>{const o=a.createOscillator();const g=a.createGain();o.type='triangle';o.frequency.value=f;g.gain.value=.15;g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.18+i*.08);o.connect(g).connect(a.destination);o.start(a.currentTime+i*.08);o.stop(a.currentTime+.26+i*.08)});
+}
+$('btn-add').addEventListener('click',add);
+$('title').addEventListener('keydown',(e)=>{if(e.key==='Enter')add()});
+$('btn-addname').addEventListener('click',addName);
+$('newname').addEventListener('keydown',(e)=>{if(e.key==='Enter')addName()});
+$('btn-next').addEventListener('click',nextSong);
+$('btn-done').addEventListener('click',()=>{state.current=null;save();render();showToast('完了！次の人どうぞ')});
+$('btn-shuffle').addEventListener('click',()=>{
+  for(let i=state.queue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[state.queue[i],state.queue[j]]=[state.queue[j],state.queue[i]]}
+  save();render();showToast('シャッフルしました');
+});
+$('btn-clear').addEventListener('click',()=>{if(!confirm('全部消す？'))return;state.queue=[];state.current=null;save();render()});
+render();
+})();
+</script>
+</body>
+</html>
