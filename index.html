@@ -35,9 +35,10 @@ header{display:flex;justify-content:space-between;align-items:center}
 .song .ttl{font-family:"Mochiy Pop P One",sans-serif;font-size:13px;line-height:1.2}
 .song .by{font-size:11px;opacity:.6}
 .song .who{background:#ffd56b;border:1.5px solid #3a2a1c;border-radius:999px;padding:2px 8px;font-size:10px}
-.song .ctrl{display:flex;gap:4px}
-.song .ctrl button{background:none;border:0;color:#888;cursor:pointer;font-size:14px;padding:0 4px}
-.song .ctrl button:hover{color:#3a2a1c}
+.song .ctrl{display:flex;gap:2px}
+.song .ctrl button{background:#fff5e0;border:1.5px solid #3a2a1c;color:#3a2a1c;cursor:pointer;font-size:14px;font-weight:900;width:32px;height:32px;border-radius:8px;padding:0;display:flex;align-items:center;justify-content:center}
+.song .ctrl button:active{transform:translate(1px,1px);background:#ffd56b}
+.song .ctrl .del{color:#d93a1a}
 .empty{padding:30px 10px;text-align:center;opacity:.5;font-size:13px;white-space:pre-line}
 .actions-row{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .actions-row button{background:#fff;border:2.5px solid #3a2a1c;color:#3a2a1c;padding:10px;font-family:"Mochiy Pop P One",sans-serif;font-size:13px;border-radius:12px;cursor:pointer;box-shadow:2px 2px 0 #3a2a1c}
@@ -58,11 +59,11 @@ header{display:flex;justify-content:space-between;align-items:center}
 <meta property="og:title" content="カラオケ予約">
 <meta property="og:description" content="カラオケパーティーの予約リスト管理">
 <meta property="og:url" content="https://maxtakaharu34-cmd.github.io/karaoke-jp/">
-<meta property="og:image" content="og.svg">
+<meta property="og:image" content="og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="カラオケ予約">
 <meta name="twitter:description" content="カラオケパーティーの予約リスト管理">
-<meta name="twitter:image" content="og.svg">
+<meta name="twitter:image" content="og.png">
 <!-- spark-og-v1 -->
 </head>
 <body>
@@ -133,7 +134,7 @@ function render(){
       const c=document.createElement('div');c.className='ctrl';
       const up=document.createElement('button');up.textContent='▲';up.title='前へ';up.addEventListener('click',()=>{if(i>0){[state.queue[i-1],state.queue[i]]=[state.queue[i],state.queue[i-1]];save();render()}});
       const dn=document.createElement('button');dn.textContent='▼';dn.title='後ろへ';dn.addEventListener('click',()=>{if(i<state.queue.length-1){[state.queue[i+1],state.queue[i]]=[state.queue[i],state.queue[i+1]];save();render()}});
-      const dl=document.createElement('button');dl.textContent='✕';dl.title='削除';dl.addEventListener('click',()=>{state.queue.splice(i,1);save();render()});
+      const dl=document.createElement('button');dl.textContent='✕';dl.title='削除';dl.className='del';dl.addEventListener('click',()=>{state.queue.splice(i,1);save();render()});
       c.appendChild(up);c.appendChild(dn);c.appendChild(dl);
       r.appendChild(n);r.appendChild(m);r.appendChild(w);r.appendChild(c);list.appendChild(r);
     });
